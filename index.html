@@ -230,11 +230,15 @@ input[type=text]::placeholder { color: var(--muted); }
 .field-card {
   background: var(--bg);
   border:1px solid var(--border2);
-  padding: 4px 8px;
+  padding: 6px 8px;
   font-size:10px;
   font-family:'Share Tech Mono',monospace;
   color: var(--muted2);
-  white-space:nowrap;
+}
+.field-card .fc-name { white-space:nowrap; }
+.field-card .fc-desc {
+  font-size:9px; color:var(--muted); line-height:1.4;
+  margin-top:3px; white-space:normal; max-width:140px;
 }
 
 /* Points display */
@@ -317,7 +321,7 @@ input[type=text]::placeholder { color: var(--muted); }
 .hp-queue { display:flex; flex-direction:column; gap:8px; }
 .hp-item { background:var(--surface); border:1px solid var(--border); padding:10px 12px; }
 .hp-item .hpi-text { font-size:12px; color:var(--text); margin-bottom:8px; line-height:1.5; }
-.hp-item .hpi-btns { display:flex; gap:8px; }
+.hp-item .hpi-btns { display:flex; gap:8px; flex-wrap:wrap; }
 .hp-item .hpi-btns button {
   flex:1; padding:7px; border:none; cursor:pointer;
   font-family:'Dela Gothic One',sans-serif; font-size:12px;
@@ -327,6 +331,20 @@ input[type=text]::placeholder { color: var(--muted); }
 .hpi-lose { background:var(--red); color:#fff; }
 .hpi-win:hover { background:#33ff88; }
 .hpi-lose:hover { background:#ff5070; }
+
+/* Per-player judgment */
+.hp-players { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+.hp-player-row {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg); border:1px solid var(--border);
+  padding:6px 10px;
+}
+.hp-player-row .hppr-name { flex:1; font-size:12px; color:var(--text); font-family:'Noto Sans JP',sans-serif; }
+.hppr-win { background:var(--green); color:#000; border:none; cursor:pointer; padding:4px 10px; font-family:'Dela Gothic One',sans-serif; font-size:11px; transition:all 0.15s; }
+.hppr-lose { background:var(--red); color:#fff; border:none; cursor:pointer; padding:4px 10px; font-family:'Dela Gothic One',sans-serif; font-size:11px; transition:all 0.15s; }
+.hppr-win:hover { background:#33ff88; }
+.hppr-lose:hover { background:#ff5070; }
+.hppr-win:disabled, .hppr-lose:disabled { opacity:0.35; cursor:not-allowed; }
 
 /* ── MODAL ── */
 .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; align-items:center; justify-content:center; padding:20px; }
@@ -942,12 +960,12 @@ function renderGame(room) {
   fg.innerHTML = '';
   turnOrder.forEach(pid => {
     const p = players[pid]; if (!p) return;
-    const myField = (field[pid] || []).map(cid => CARD_MAP[cid]?.name || cid);
+    const myFieldCards = (field[pid] || []).map(cid => CARD_MAP[cid] || { name: cid, desc: '', id: cid });
     const div = document.createElement('div');
     div.className = 'field-player';
     div.innerHTML = `<div class="fpname">${p.name}</div>
-      <div class="field-cards">${myField.length
-        ? myField.map(n=>`<span class="field-card">${n}</span>`).join('')
+      <div class="field-cards">${myFieldCards.length
+        ? myFieldCards.map(c=>`<span class="field-card"><div class="fc-name">${c.name}</div>${c.desc ? `<div class="fc-desc">${c.desc}</div>` : ''}</span>`).join('')
         : '<span style="font-size:10px;color:var(--muted)">なし</span>'}</div>`;
     fg.appendChild(div);
   });
@@ -995,10 +1013,26 @@ function renderGame(room) {
     queue.forEach((item, idx) => {
       const div = document.createElement('div');
       div.className = 'hp-item';
+      // Build per-player rows for all active players
+      const activePlayers = (room.turnOrder || [])
+        .filter(pid => !players[pid]?.eliminated)
+        .map(pid => [pid, players[pid]]);
+      const playerRows = activePlayers.map(([pid, p]) => {
+        const alreadyJudged = item.judged && item.judged[pid];
+        const verdict = item.judged && item.judged[pid];
+        const styleWin = verdict === 'win' ? 'opacity:0.5;outline:2px solid var(--green)' : '';
+        const styleLose = verdict === 'lose' ? 'opacity:0.5;outline:2px solid var(--red)' : '';
+        return `<div class="hp-player-row">
+          <div class="hppr-name">${p.name}${pid === S.myId ? ' (YOU)' : ''}</div>
+          <button class="hppr-win" style="${styleWin}" onclick="hostJudgePlayer('${S.roomCode}',${idx},'${pid}','win')">✓ 勝利</button>
+          <button class="hppr-lose" style="${styleLose}" onclick="hostJudgePlayer('${S.roomCode}',${idx},'${pid}','lose')">✗ 敗北</button>
+        </div>`;
+      }).join('');
       div.innerHTML = `<div class="hpi-text">${item.prompt}</div>
-        <div class="hpi-btns">
-          <button class="hpi-win" onclick="hostJudge('${S.roomCode}',${idx},'win')">✓ YES</button>
-          <button class="hpi-lose" onclick="hostJudge('${S.roomCode}',${idx},'no')">✗ NO</button>
+        <div class="hp-players">${playerRows}</div>
+        <div class="hpi-btns" style="margin-top:8px">
+          <button class="hpi-win" onclick="hostJudgeDone('${S.roomCode}',${idx})">✓ 判定完了</button>
+          <button class="hpi-lose" onclick="hostJudgeCancel('${S.roomCode}',${idx})">✗ キャンセル</button>
         </div>`;
       hpq.appendChild(div);
     });
@@ -1010,7 +1044,21 @@ function renderGame(room) {
 // ============================================================
 // HOST JUDGMENT
 // ============================================================
-window.hostJudge = async function(code, idx, result) {
+
+// Mark a single player as win/lose within a queued judgment item
+window.hostJudgePlayer = async function(code, idx, pid, verdict) {
+  const snap = await get(ref(db, `rooms/${code}`));
+  const room = snap.val();
+  const queue = [...(room.judgmentQueue || [])];
+  if (!queue[idx]) return;
+  // Store verdict per player on the queue item
+  const judged = { ...(queue[idx].judged || {}), [pid]: verdict };
+  queue[idx] = { ...queue[idx], judged };
+  await update(ref(db), { [`rooms/${code}/judgmentQueue`]: queue });
+};
+
+// Finalize a judgment item: apply all per-player verdicts then remove from queue
+window.hostJudgeDone = async function(code, idx) {
   const snap = await get(ref(db, `rooms/${code}`));
   const room = snap.val();
   const queue = [...(room.judgmentQueue || [])];
@@ -1023,33 +1071,44 @@ window.hostJudge = async function(code, idx, result) {
   let status = room.status;
   let winner = room.winner || null;
   const points = { ...room.points };
+  const judged = item.judged || {};
 
-  if (result === 'win') {
-    // Instant win
-    status = 'finished'; winner = item.actorId;
-    logs.push(`${players[item.actorId]?.name} の勝利！（判定: ${item.cardName}）`);
-  } else if (item.type === 'conditional_point') {
-    // Falls through to point
-    const pt = (points[item.actorId] || 0) + 5;
-    points[item.actorId] = pt;
-    logs.push(`${players[item.actorId]?.name} が5ポイント獲得（合計 ${pt}pt）`);
-    if (pt >= (room.winThreshold || 15)) {
-      status = 'finished'; winner = item.actorId;
-      logs.push(`${players[item.actorId]?.name} が ${pt}ポイントで勝利！`);
+  // Apply per-player verdicts
+  const winners = Object.entries(judged).filter(([,v]) => v === 'win').map(([pid]) => pid);
+  const losers  = Object.entries(judged).filter(([,v]) => v === 'lose').map(([pid]) => pid);
+
+  losers.forEach(pid => {
+    if (players[pid]) {
+      players[pid] = { ...players[pid], eliminated: true };
+      logs.push(`${players[pid].name} が敗北！（判定: ${item.cardName}）`);
     }
-  } else if (item.type === 'rule_violation') {
-    // Eliminate target
-    if (item.targetId && players[item.targetId]) {
-      players[item.targetId] = { ...players[item.targetId], eliminated: true };
-      logs.push(`${players[item.targetId]?.name} がルール違反で脱落！`);
-    }
-  } else if (item.type === 'game_judge') {
-    // Generic: host resolves manually in chat/voice
-    logs.push(`「${item.cardName}」の判定完了 (${result === 'win' ? 'YES' : 'NO'})`);
+  });
+
+  // If exactly one winner declared, treat as instant win
+  if (winners.length === 1 && losers.length === 0) {
+    const pid = winners[0];
+    status = 'finished'; winner = pid;
+    logs.push(`${players[pid]?.name} の勝利！（判定: ${item.cardName}）`);
+  } else if (winners.length > 0 && losers.length === 0) {
+    // Multiple winners marked — give them points instead
+    winners.forEach(pid => {
+      if (players[pid]) {
+        const pt = (points[pid] || 0) + 5;
+        points[pid] = pt;
+        logs.push(`${players[pid].name} が5ポイント獲得（合計 ${pt}pt）`);
+        if (pt >= (room.winThreshold || 15) && status !== 'finished') {
+          status = 'finished'; winner = pid;
+          logs.push(`${players[pid].name} が ${pt}ポイントで勝利！`);
+        }
+      }
+    });
+  } else if (Object.keys(judged).length === 0) {
+    // No verdicts set — treat as generic completion
+    logs.push(`「${item.cardName}」の判定完了`);
   }
 
-  const { remaining, newWinner } = checkWinConditions(players, room.turnOrder, status, winner);
-  if (newWinner) { status = 'finished'; winner = newWinner; }
+  const { newWinner } = checkWinConditions(players, room.turnOrder, status, winner);
+  if (newWinner && status !== 'finished') { status = 'finished'; winner = newWinner; }
 
   const updates = {};
   updates[`rooms/${code}/judgmentQueue`] = queue;
@@ -1059,6 +1118,30 @@ window.hostJudge = async function(code, idx, result) {
   updates[`rooms/${code}/points`] = points;
   if (winner) updates[`rooms/${code}/winner`] = winner;
   await update(ref(db), updates);
+};
+
+// Cancel / dismiss a judgment item without applying verdicts
+window.hostJudgeCancel = async function(code, idx) {
+  const snap = await get(ref(db, `rooms/${code}`));
+  const room = snap.val();
+  const queue = [...(room.judgmentQueue || [])];
+  if (!queue[idx]) return;
+  const item = queue[idx];
+  queue.splice(idx, 1);
+  const logs = [...(room.log || []), `「${item.cardName}」の判定をキャンセルしました`];
+  await update(ref(db), {
+    [`rooms/${code}/judgmentQueue`]: queue,
+    [`rooms/${code}/log`]: logs,
+  });
+};
+
+window.hostJudge = async function(code, idx, result) {
+  // Legacy shim — route to new functions
+  if (result === 'win') {
+    await hostJudgeDone(code, idx);
+  } else {
+    await hostJudgeCancel(code, idx);
+  }
 };
 
 // ============================================================
