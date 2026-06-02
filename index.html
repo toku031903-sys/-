@@ -402,6 +402,7 @@ input[type=text]::placeholder { color: var(--muted); }
 
   <div class="cfg-warn" id="cfg-warn">
    
+概要欄
 
   </div>
 
@@ -526,7 +527,7 @@ import { getDatabase, ref, set, get, onValue, update, remove, off }
 
 let db;
 try {
-  if (firebaseConfig.apiKey === "AIzaSyA2SWCELJRo6eF-glqgddos4lFbt06cBhE") {
+  if (firebaseConfig.apiKey === "YOUR_API_KEY") {
     document.getElementById('cfg-warn').style.display = 'block';
   } else {
     const app = initializeApp(firebaseConfig);
