@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>テストプレイなんてしてないよ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --surface2: #1f1f1f;
+  --border: #2e2e2e;
+  --border2: #3d3d3d;
+  --text: #f0f0f0;
+  --muted: #666;
+  --muted2: #888;
+  --red: #ff2d55;
+  --green: #00e676;
+  --yellow: #ffd600;
+  --blue: #2979ff;
+  --purple: #e040fb;
+  --orange: #ff6d00;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ── TITLE ── */
+#screen-title {
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 40px 20px;
+  background:
+    radial-gradient(circle at 15% 85%, rgba(255,45,85,0.12) 0%, transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(0,230,118,0.08) 0%, transparent 50%),
+    var(--bg);
+}
+
+.title-block { text-align: center; }
+
+.title-main {
+  font-family: 'Dela Gothic One', sans-serif;
+  font-size: clamp(36px, 9vw, 80px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #fff 0%, #999 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-main em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--red) 0%, #ff6b35 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  margin-top: 10px;
+  text-transform: uppercase;
+}
+
+.title-tag {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 4px 12px;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* ── FORM ── */
+.form-box {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 28px 24px;
+}
+
+.form-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-family: 'Share Tech Mono', monospace;
+  margin-bottom: 8px;
+  display: block;
+}
+
+input[type=text] {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 16px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  margin-bottom: 16px;
+}
+input[type=text]:focus { border-color: var(--green); }
+input[type=text]::placeholder { color: var(--muted); }
+
+.sep { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+.sep span { font-size: 11px; color: var(--muted); font-family: 'Share Tech Mono', monospace; }
+.sep::before, .sep::after { content:''; flex:1; height:1px; background: var(--border); }
+
+.err { color: var(--red); font-size: 12px; font-family:'Share Tech Mono',monospace; min-height:18px; margin-bottom:8px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: block; width: 100%;
+  padding: 13px 16px;
+  border: none; cursor: pointer;
+  font-family: 'Dela Gothic One', sans-serif;
+  font-size: 15px; letter-spacing: 0.05em;
+  transition: all 0.15s; text-align: center;
+}
+.btn:active { transform: scale(0.98); }
+.btn + .btn { margin-top: 8px; }
+
+.btn-red { background: var(--red); color: #fff; }
+.btn-red:hover { background: #ff5070; }
+.btn-green { background: transparent; color: var(--green); border: 1px solid var(--green); }
+.btn-green:hover { background: rgba(0,230,118,0.08); }
+.btn-gray { background: transparent; color: var(--muted2); border: 1px solid var(--border2); }
+.btn-gray:hover { background: var(--surface2); }
+.btn-yellow { background: var(--yellow); color: #000; }
+.btn-yellow:hover { background: #ffe033; }
+
+/* ── LOBBY ── */
+#screen-lobby {
+  align-items: center;
+  gap: 20px;
+  padding: 32px 20px;
+}
+
+.room-banner {
+  width: 100%; max-width: 400px;
+  border: 1px dashed var(--yellow);
+  padding: 20px;
+  text-align: center;
+}
+.room-banner .rlabel { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); font-family:'Share Tech Mono',monospace; text-transform:uppercase; }
+.room-banner .rcode { font-family:'Dela Gothic One',sans-serif; font-size: 52px; letter-spacing: 0.2em; color: var(--yellow); line-height:1.1; }
+.room-banner .rcopy { font-size:11px; color:var(--muted); margin-top:6px; font-family:'Share Tech Mono',monospace; }
+
+.lobby-section { width:100%; max-width:400px; }
+.section-label { font-size:10px; letter-spacing:0.2em; color:var(--muted); font-family:'Share Tech Mono',monospace; text-transform:uppercase; margin-bottom:10px; }
+
+.pitem {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px;
+  background:var(--surface); border:1px solid var(--border);
+  margin-bottom:6px; font-size:14px;
+}
+.pitem .dot { width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0; }
+.badge { font-family:'Share Tech Mono',monospace; font-size:10px; padding:2px 6px; margin-left:auto; }
+.badge-host { color:var(--yellow); border:1px solid var(--yellow); }
+.badge-you { color:var(--green); border:1px solid var(--green); }
+
+.blink { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--muted); animation:blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
+
+/* ── GAME ── */
+#screen-game {
+  flex-direction: column;
+  padding: 0;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.game-topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top:0; z-index:10;
+}
+
+.topbar-turn { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--muted); }
+.topbar-turn strong { color:var(--green); font-size:15px; }
+.topbar-deck { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--muted); }
+
+.game-body { flex:1; padding:16px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; }
+
+/* Players row */
+.pstatus-row { display:flex; gap:8px; flex-wrap:wrap; }
+.pstatus {
+  flex:1; min-width:90px;
+  background:var(--surface); border:1px solid var(--border);
+  padding:8px 10px; font-size:11px;
+}
+.pstatus.active-turn { border-color:var(--green); background:rgba(0,230,118,0.05); }
+.pstatus.eliminated { opacity:0.35; }
+.pstatus .pn { font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pstatus .pi { color:var(--muted); font-family:'Share Tech Mono',monospace; font-size:10px; margin-top:2px; }
+
+/* Field area (cards placed in front of players) */
+.field-section { }
+.field-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.field-player { background:var(--surface); border:1px solid var(--border); padding:8px 10px; }
+.field-player .fpname { font-size:11px; color:var(--muted); font-family:'Share Tech Mono',monospace; margin-bottom:6px; }
+.field-cards { display:flex; gap:6px; flex-wrap:wrap; }
+.field-card {
+  background: var(--bg);
+  border:1px solid var(--border2);
+  padding: 4px 8px;
+  font-size:10px;
+  font-family:'Share Tech Mono',monospace;
+  color: var(--muted2);
+  white-space:nowrap;
+}
+
+/* Points display */
+.points-badge { color:var(--yellow); font-weight:700; }
+
+/* Log */
+.log-box {
+  background:var(--surface); border:1px solid var(--border);
+  padding:10px 12px; height:100px; overflow-y:auto;
+  font-family:'Share Tech Mono',monospace; font-size:11px;
+  color:var(--muted); line-height:1.8;
+}
+.log-box .le { }
+.log-box .le.lhigh { color:var(--yellow); }
+.log-box .le.lwin { color:var(--green); }
+.log-box .le.llose { color:var(--red); }
+.log-box .le.lsys { color:var(--muted); font-style:italic; }
+
+/* Deck + actions */
+.action-row { display:flex; gap:10px; align-items:stretch; }
+
+.deck-btn {
+  flex:0 0 auto; width:80px; height:110px;
+  background:var(--surface); border:2px solid var(--border2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:6px; cursor:pointer; transition:all 0.2s; font-size:28px;
+  position:relative;
+}
+.deck-btn::before {
+  content:''; position:absolute; top:-4px;left:-4px;
+  width:100%;height:100%; background:var(--surface); border:2px solid var(--border); z-index:-1;
+}
+.deck-btn::after {
+  content:''; position:absolute; top:-8px;left:-8px;
+  width:100%;height:100%; background:var(--surface); border:2px solid var(--border); z-index:-2;
+}
+.deck-btn:hover { border-color:var(--green); transform:translateY(-2px); }
+.deck-btn.disabled { opacity:0.4; cursor:not-allowed; }
+.deck-btn.disabled:hover { transform:none; border-color:var(--border2); }
+.deck-btn span { font-size:10px; font-family:'Share Tech Mono',monospace; color:var(--muted); }
+
+/* Hand */
+.hand-wrap { flex:1; }
+.hand-label { font-size:10px; letter-spacing:0.2em; color:var(--muted); font-family:'Share Tech Mono',monospace; text-transform:uppercase; margin-bottom:8px; }
+.hand-cards { display:flex; gap:8px; flex-wrap:wrap; }
+
+.card {
+  width: 96px; min-height:130px;
+  background:var(--surface); border:1px solid var(--border2);
+  padding:8px; display:flex; flex-direction:column; gap:5px;
+  cursor:pointer; transition:all 0.18s; font-size:10px; position:relative;
+}
+.card:hover { border-color:var(--red); transform:translateY(-6px); box-shadow:0 10px 28px rgba(255,45,85,0.18); }
+.card.disabled { cursor:not-allowed; opacity:0.5; }
+.card.disabled:hover { transform:none; border-color:var(--border2); box-shadow:none; }
+
+.ctag {
+  font-family:'Share Tech Mono',monospace; font-size:9px;
+  padding:2px 5px; letter-spacing:0.08em;
+  display:inline-block; align-self:flex-start;
+}
+.ctag-threat { background:rgba(255,45,85,0.15); color:var(--red); }
+.ctag-counter { background:rgba(41,121,255,0.15); color:var(--blue); }
+.ctag-bomb { background:rgba(255,109,0,0.15); color:var(--orange); }
+.ctag-point { background:rgba(255,214,0,0.15); color:var(--yellow); }
+.ctag-rule { background:rgba(224,64,251,0.15); color:var(--purple); }
+.ctag-instant { background:rgba(0,230,118,0.15); color:var(--green); }
+.ctag-misc { background:rgba(100,100,100,0.2); color:var(--muted2); }
+
+.cname { font-size:12px; font-weight:700; color:var(--text); line-height:1.2; }
+.cdesc { font-size:9.5px; color:var(--muted2); flex:1; line-height:1.4; }
+
+/* Host judgment panel */
+.host-panel {
+  background: rgba(255,214,0,0.06);
+  border: 1px solid rgba(255,214,0,0.3);
+  padding: 12px 14px;
+}
+.host-panel .hp-title { font-size:11px; letter-spacing:0.15em; color:var(--yellow); font-family:'Share Tech Mono',monospace; text-transform:uppercase; margin-bottom:10px; }
+.hp-queue { display:flex; flex-direction:column; gap:8px; }
+.hp-item { background:var(--surface); border:1px solid var(--border); padding:10px 12px; }
+.hp-item .hpi-text { font-size:12px; color:var(--text); margin-bottom:8px; line-height:1.5; }
+.hp-item .hpi-btns { display:flex; gap:8px; }
+.hp-item .hpi-btns button {
+  flex:1; padding:7px; border:none; cursor:pointer;
+  font-family:'Dela Gothic One',sans-serif; font-size:12px;
+  transition:all 0.15s;
+}
+.hpi-win { background:var(--green); color:#000; }
+.hpi-lose { background:var(--red); color:#fff; }
+.hpi-win:hover { background:#33ff88; }
+.hpi-lose:hover { background:#ff5070; }
+
+/* ── MODAL ── */
+.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; align-items:center; justify-content:center; padding:20px; }
+.overlay.on { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border2); padding:24px; max-width:380px; width:100%; animation:popIn 0.2s ease; }
+@keyframes popIn { from{transform:scale(0.92);opacity:0} to{transform:scale(1);opacity:1} }
+.modal h3 { font-family:'Dela Gothic One',sans-serif; font-size:20px; margin-bottom:14px; }
+.modal-card-preview {
+  background:var(--bg); border:1px solid var(--border);
+  padding:16px; margin:14px 0;
+}
+.modal-card-preview .cname { font-size:17px; margin:8px 0 6px; }
+.modal-card-preview .cdesc { font-size:13px; color:var(--text); line-height:1.6; }
+.modal-btns { display:flex; gap:10px; margin-top:4px; }
+.modal-btns .btn { flex:1; }
+
+/* Target select */
+.target-list { display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+.target-btn {
+  padding:11px 14px; background:var(--bg); border:1px solid var(--border2);
+  color:var(--text); cursor:pointer; font-family:'Noto Sans JP',sans-serif;
+  font-size:14px; text-align:left; transition:all 0.15s;
+}
+.target-btn:hover { border-color:var(--blue); background:rgba(41,121,255,0.08); }
+
+/* ── RESULT ── */
+#screen-result {
+  align-items:center; justify-content:center;
+  gap:28px; padding:40px 20px; text-align:center;
+}
+.result-emoji { font-size:72px; animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+.result-title { font-family:'Dela Gothic One',sans-serif; font-size:clamp(36px,10vw,80px); line-height:1; }
+.result-title.win { color:var(--green); text-shadow:0 0 40px rgba(0,230,118,0.4); }
+.result-title.lose { color:var(--red); text-shadow:0 0 40px rgba(255,45,85,0.4); }
+.result-title.draw { color:var(--muted2); }
+.result-sub { font-size:16px; color:var(--muted2); max-width:320px; }
+
+/* Toast */
+.toast {
+  position:fixed; bottom:24px; left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:var(--surface); border:1px solid var(--border2);
+  padding:10px 20px; font-family:'Share Tech Mono',monospace; font-size:12px;
+  z-index:300; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  white-space:nowrap; pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.tw { border-color:var(--green); color:var(--green); }
+.toast.tl { border-color:var(--red); color:var(--red); }
+.toast.ti { border-color:var(--yellow); color:var(--yellow); }
+
+/* Config warning */
+.cfg-warn {
+  background:rgba(255,214,0,0.08); border:1px solid rgba(255,214,0,0.3);
+  padding:12px 16px; font-family:'Share Tech Mono',monospace; font-size:11px;
+  color:var(--yellow); line-height:1.7; max-width:400px; width:100%; text-align:center;
+}
+
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); }
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div id="screen-title" class="screen active">
+  <div class="title-block">
+    <div class="title-main">テストプレイなんて<br>してないよ</div>
+    <div class="title-sub">Untested Card Game Online — 2〜6 Players</div>
+    <div class="title-tag">⚠ NO PLAYTESTING WHATSOEVER</div>
+  </div>
+
+  <div class="cfg-warn" id="cfg-warn">
+    ⚙ Firebase設定が必要です。HTMLファイル内の firebaseConfig を書き換えてください。
+  </div>
+
+  <div class="form-box">
+    <label class="form-label">プレイヤー名</label>
+    <input type="text" id="inp-name" placeholder="あなたの名前" maxlength="12">
+    <div class="err" id="title-err"></div>
+    <button class="btn btn-red" onclick="doCreate()">新しい部屋を作る</button>
+    <div class="sep"><span>または</span></div>
+    <label class="form-label">ルームコード（4文字）</label>
+    <input type="text" id="inp-room" placeholder="ABCD" maxlength="4" style="text-transform:uppercase">
+    <button class="btn btn-green" onclick="doJoin()">部屋に入る</button>
+  </div>
+</div>
+
+<!-- LOBBY -->
+<div id="screen-lobby" class="screen">
+  <div style="padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:18px;width:100%;">
+    <div class="room-banner">
+      <div class="rlabel">ルームコード — 友達に教えよう</div>
+      <div class="rcode" id="lob-code">----</div>
+      <div class="rcopy">このコードを入力して参加</div>
+    </div>
+
+    <div class="lobby-section">
+      <div class="section-label">参加者</div>
+      <div id="lob-players"></div>
+      <div class="blink" id="lob-wait">もう少し人が来るのを待っています…</div>
+    </div>
+
+    <div style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-yellow" id="btn-start" style="display:none" onclick="doStart()">ゲームスタート！</button>
+      <button class="btn btn-gray" onclick="doLeave()">退室する</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="game-topbar">
+    <div class="topbar-turn">ターン: <strong id="g-turn-name">---</strong></div>
+    <div class="topbar-deck" id="g-deck-count">山札: -- 枚</div>
+  </div>
+
+  <div class="game-body">
+    <!-- Player statuses -->
+    <div class="pstatus-row" id="g-pstatus"></div>
+
+    <!-- Field (cards placed) -->
+    <div class="field-section">
+      <div class="section-label">場に出ているカード</div>
+      <div class="field-grid" id="g-field"></div>
+    </div>
+
+    <!-- Log -->
+    <div class="log-box" id="g-log"></div>
+
+    <!-- Deck + Hand -->
+    <div class="action-row">
+      <div>
+        <div class="deck-btn" id="g-deck-btn" onclick="doDraw()">
+          🃏<span id="g-deck-num">--</span>
+        </div>
+      </div>
+      <div class="hand-wrap">
+        <div class="hand-label">あなたの手札</div>
+        <div class="hand-cards" id="g-hand"></div>
+      </div>
+    </div>
+
+    <!-- Host judgment queue -->
+    <div class="host-panel" id="g-host-panel" style="display:none">
+      <div class="hp-title">⚖ 親の判定待ち</div>
+      <div class="hp-queue" id="g-hp-queue"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div class="result-emoji" id="r-emoji">🎲</div>
+  <div class="result-title" id="r-title">---</div>
+  <div class="result-sub" id="r-sub"></div>
+  <button class="btn btn-red" style="max-width:280px" onclick="doBackTitle()">タイトルへ戻る</button>
+</div>
+
+<!-- MODAL: Card play -->
+<div class="overlay" id="modal-play">
+  <div class="modal">
+    <h3 style="color:var(--red)">カードをプレイ</h3>
+    <div class="modal-card-preview" id="mplay-preview"></div>
+    <div id="mplay-target-area"></div>
+    <div class="modal-btns" id="mplay-btns">
+      <button class="btn btn-red" onclick="confirmPlay()">プレイ！</button>
+      <button class="btn btn-gray" onclick="closeModal('modal-play')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+// ============================================================
+// 🔧 ここにFirebaseの設定を貼り付けてください
+// ============================================================
+firebaseConfig = {
+  apiKey: "AIzaSyA2SWCELJRo6eF-glqgddos4lFbt06cBhE",
+  authDomain: "play-testing-80e36.firebaseapp.com",
+  databaseURL: "https://play-testing-80e36-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "play-testing-80e36",
+  storageBucket: "play-testing-80e36.firebasestorage.app",
+  messagingSenderId: "372952710749",
+  appId: "1:372952710749:web:26b85e2fa7411d6a0417b4",
+  measurementId: "G-FDPJ5GMEV7"
+};
+// ============================================================
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, remove, off }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+let db;
+try {
+  if (firebaseConfig.apiKey === "AIzaSyA2SWCELJRo6eF-glqgddos4lFbt06cBhE") {
+    document.getElementById('cfg-warn').style.display = 'block';
+  } else {
+    const app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    document.getElementById('cfg-warn').style.display = 'none';
+  }
+} catch(e) { console.error(e); }
+
+// ============================================================
+// CARDS
+// ============================================================
+// tag types: threat / counter / bomb / point / rule / instant / misc
+const CARDS = [
+  // ── 脅威カード（前に置かれて手番終了時に発動）──
+  { id:'dragon',      tag:'threat', name:'ドラゴン',      copies:1,
+    desc:'任意のプレイヤーの前に置く。手番終了時にそのカードが自分の前にあったら敗北。',
+    needsTarget: true, placeFront: true },
+  { id:'porcupine',   tag:'threat', name:'ハリセンボン',   copies:1,
+    desc:'任意のプレイヤーの前に置く。手番終了時にそのカードが自分の前にあったら敗北。',
+    needsTarget: true, placeFront: true },
+  { id:'blackhole',   tag:'threat', name:'ブラックホール', copies:1,
+    desc:'任意のプレイヤーの前に置く。手番終了時にそのカードが自分の前にあったら敗北。',
+    needsTarget: true, placeFront: true },
+  { id:'laser',       tag:'threat', name:'レーザー',       copies:1,
+    desc:'任意のプレイヤーの前に置く。手番終了時にそのカードが自分の前にあったら敗北。',
+    needsTarget: true, placeFront: true },
+  { id:'hotpotato',   tag:'threat', name:'ホットポテト',   copies:1,
+    desc:'任意のプレイヤーの前に置く。以降そのカードが前にあるプレイヤーは、カードをプレイする前に左隣へ移すこと。忘れたら敗北。',
+    needsTarget: true, placeFront: true, hostJudge: true,
+    hostPrompt: (actor, target) => `「ホットポテト」の処理：${target}は左隣へ渡しましたか？` },
+
+  // ── カウンターカード（特定の脅威を跳ね返す）──
+  { id:'science',     tag:'counter', name:'科学',          copies:1,
+    desc:'【ドラゴン】または【ブラックホール】が自分の前に1枚だけある場合、それを任意のプレイヤーの前へ移す。なければカードを2枚引く。',
+    needsTarget: 'conditional', placeFront: false },
+  { id:'spaceship',   tag:'counter', name:'宇宙船',         copies:1,
+    desc:'【レーザー】または【ブラックホール】が自分の前に1枚だけある場合、それを任意のプレイヤーの前へ移す。なければカードを2枚引く。',
+    needsTarget: 'conditional', placeFront: false },
+  { id:'shield',      tag:'counter', name:'盾',             copies:1,
+    desc:'【ドラゴン】または【ハリセンボン】が自分の前に1枚だけある場合、それを任意のプレイヤーの前へ移す。なければカードを2枚引く。',
+    needsTarget: 'conditional', placeFront: false },
+  { id:'fastmove',    tag:'counter', name:'猛スピード！',   copies:1,
+    desc:'【レーザー】または【ハリセンボン】が自分の前に1枚だけある場合、それを任意のプレイヤーの前へ移す。なければカードを2枚引く。',
+    needsTarget: 'conditional', placeFront: false },
+
+  // ── 爆弾 ──
+  { id:'bomb',        tag:'bomb',   name:'爆弾',           copies:5,
+    desc:'自分の前にこのカードを置き手番終了。場に合計4枚以上の【爆弾】が置かれたら全員敗北！',
+    placeFront: 'self' },
+
+  // ── ポイント系 ──
+  { id:'point8',      tag:'point',  name:'ポイント(8)',    copies:1,
+    desc:'自分の前に置き8ポイント獲得。15ポイント以上で勝利。', placeFront: 'self' },
+  { id:'win5a',       tag:'point',  name:'勝利！(青服)',   copies:1,
+    desc:'残プレイヤー全員が青い服を着ていたら即勝利。なければ自分の前に置き5ポイント獲得。',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: (actor) => `「勝利！(青服)」：${actor}以外の全員が青い服を着ていますか？` },
+  { id:'win5b',       tag:'point',  name:'勝利！(誕生月)', copies:1,
+    desc:'今月が誕生月なら即勝利。なければ5ポイント獲得。',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: (actor) => `「勝利！(誕生月)」：${actor}は今月が誕生月ですか？` },
+  { id:'win5c',       tag:'point',  name:'勝利！(唯一の女性)', copies:1,
+    desc:'全プレイヤー中で唯一の女性なら即勝利。なければ5ポイント獲得。',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: (actor) => `「勝利！(唯一の女性)」：${actor}は唯一の女性ですか？` },
+  { id:'win5d',       tag:'point',  name:'勝利！(爆弾3枚)', copies:1,
+    desc:'場に【爆弾】が3枚表になっていたら即勝利。なければ5ポイント獲得。',
+    placeFront: 'self' },
+  { id:'win5e',       tag:'point',  name:'勝利！(最背低)', copies:1,
+    desc:'全プレイヤー中で最も背が低ければ即勝利。なければ5ポイント獲得。',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: (actor) => `「勝利！(最背低)」：${actor}は全員の中で最も背が低いですか？` },
+  { id:'superpoint',  tag:'point',  name:'スーパーポイント', copies:1,
+    desc:'自分の前に置き90ポイント獲得。ただし100ポイント以上にならないと誰も勝利できない。',
+    placeFront: 'self' },
+  { id:'alldiewin',   tag:'point',  name:'爆弾パーティ',   copies:1,
+    desc:'全員が手札の爆弾を前に出す。4枚以上で即爆発——あなたの勝利！' },
+  { id:'moral',       tag:'point',  name:'道徳的には正しい', copies:1,
+    desc:'残っている全プレイヤーが勝利する。やった！' },
+
+  // ── ルール系（場に残って継続効果）──
+  { id:'rule_sore',   tag:'rule',   name:'それ',           copies:1,
+    desc:'「今後"それ"を意味する言葉を口にしたプレイヤーは即敗北」と宣言。幸運を！',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: (actor, _, extra) => `「それ」ルール発動中：誰かが禁止ワードを言いましたか？` },
+  { id:'rule_watashi', tag:'rule',  name:'わたし',         copies:1,
+    desc:'「今後"わたし"を意味する言葉を口にしたプレイヤーは即敗北」と宣言。幸運を！',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: () => `「わたし」ルール発動中：誰かが禁止ワードを言いましたか？` },
+  { id:'rule_anata',  tag:'rule',   name:'あなた',         copies:1,
+    desc:'「今後"あなた"を意味する言葉を口にしたプレイヤーは即敗北」と宣言。幸運を！',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: () => `「あなた」ルール発動中：誰かが禁止ワードを言いましたか？` },
+  { id:'rule_yubisasi', tag:'rule', name:'指さし',         copies:1,
+    desc:'「今後なにかを指さしたプレイヤーは即敗北」と宣言。幸運を！',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: () => `「指さし」ルール発動中：誰かが指さしをしましたか？` },
+  { id:'rule_pop',    tag:'rule',   name:'創英角POP体',    copies:1,
+    desc:'全プレイヤーはカードをプレイする前に「創英角POP体最高」と言わなければ敗北。邪悪なカード。',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: () => `「創英角POP体」ルール：誰かが宣言を忘れてカードをプレイしましたか？` },
+  { id:'rule_zombie', tag:'rule',   name:'ゾンビ！',       copies:1,
+    desc:'以降、手番前に「ああ！ゾンビだ！」と言わないと敗北。ただしバナナを持っていれば助かる。',
+    placeFront: 'self', hostJudge: true,
+    hostPrompt: () => `「ゾンビ！」ルール：誰かが手番前の宣言を忘れましたか？` },
+  { id:'penguin',     tag:'rule',   name:'ペンギン',       copies:1,
+    desc:'自分の前に置く。手番開始時に他プレイヤーの前のカードを1枚盗んでいい。とても卑怯。',
+    placeFront: 'self' },
+  { id:'evillaugh',   tag:'rule',   name:'邪悪な笑い',     copies:1,
+    desc:'自分の前に置く。他プレイヤーが敗北するたびに狂ったように笑いカードを1枚引く。',
+    placeFront: 'self' },
+  { id:'dino',        tag:'rule',   name:'恐竜',           copies:1,
+    desc:'自分の前に置く。恐竜を持っている——誰も自分の前にカードを置けない。',
+    placeFront: 'self' },
+  { id:'theend',      tag:'rule',   name:'ジ・エンド',      copies:1,
+    desc:'自分の前に置く。次の自分の手番終了時に全員敗北。',
+    placeFront: 'self' },
+  { id:'norefill',    tag:'rule',   name:'手札補充なし',   copies:1,
+    desc:'自分の前に置く。以降誰も山札からカードを引けない。使えるカードがなければ敗北。',
+    placeFront: 'self' },
+
+  // ── 即時・特殊 ──
+  { id:'defeat',      tag:'misc',   name:'敗北！',         copies:1,
+    desc:'このカードを使うと敗北する。まじで。' },
+  { id:'iwaru',       tag:'instant', name:'いじわる',      copies:1,
+    desc:'他プレイヤーが勝利したときに使用。相手もあなたも敗北する。',
+    onWin: true },
+  { id:'presentsnake', tag:'misc',  name:'プレゼント！(ヘビ)', copies:1,
+    desc:'全員「いる」か「いらない」を答えてから公開。プレゼントはヘビ！「いる」を選んだ人は敗北。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「プレゼント(ヘビ)」：全員の回答を確認。「いる」を選んだプレイヤーを敗北にしてください。` },
+  { id:'presentkitten', tag:'misc', name:'プレゼント！(子猫)', copies:1,
+    desc:'全員「いる」か「いらない」を答えてから公開。プレゼントは子猫！「いらない」を選んだ人は敗北。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「プレゼント(子猫)」：全員の回答を確認。「いらない」を選んだプレイヤーを敗北にしてください。` },
+  { id:'presentempty', tag:'misc',  name:'プレゼント！(空)', copies:1,
+    desc:'全員「いる」か「いらない」を答えてから公開。空っぽ！「いる」を選んだ人は手札を1枚ランダムに失う。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「プレゼント(空っぽ)」：「いる」を選んだプレイヤーの手札を1枚ランダムに処理してください。` },
+  { id:'cakeordeath',  tag:'misc',  name:'ケーキか死か',   copies:1,
+    desc:'あなた以外が「ケーキか死か」を選ぶ。過半数が死→あなた敗北。過半数がケーキ→死選択者全員敗北。同数→あなた勝利。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「ケーキか死か」：全員の選択を確認し結果を判定してください。${actor}以外が対象。` },
+  { id:'fingercount_even', tag:'misc', name:'指の数(偶数)', copies:1,
+    desc:'「全員、せーので1〜5本指を立てること！」指の数が偶数だった全プレイヤー敗北。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「指の数(偶数)」：全員の指の数を確認し、偶数だったプレイヤーを敗北にしてください。` },
+  { id:'fingercount_odd',  tag:'misc', name:'指の数(奇数)', copies:1,
+    desc:'「全員、せーので1〜5本指を立てること！」指の数が奇数だった全プレイヤー敗北。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「指の数(奇数)」：全員の指の数を確認し、奇数だったプレイヤーを敗北にしてください。` },
+  { id:'fingercount_prime', tag:'misc', name:'指の数(素数)', copies:1,
+    desc:'「全員、せーので1〜5本指を立てること！」指の数の合計が素数ならあなた勝利。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「指の数(素数)」：全員の指の数の合計を確認し、素数なら${actor}の勝利です。` },
+  { id:'janken_guu',   tag:'misc',  name:'戦闘！(グー)',   copies:1,
+    desc:'「全員、せーのでじゃんけん！」グーを出した全プレイヤー敗北。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「戦闘！(グー)」：全員のじゃんけんを確認し、グーを出したプレイヤーを敗北に。` },
+  { id:'janken_paa',   tag:'misc',  name:'戦闘！(パー)',   copies:1,
+    desc:'「全員、せーのでじゃんけん！」パーを出した全プレイヤー敗北。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「戦闘！(パー)」：全員のじゃんけんを確認し、パーを出したプレイヤーを敗北に。` },
+  { id:'janken_choki',  tag:'misc', name:'戦闘！(チョキ)', copies:1,
+    desc:'「全員、せーのでじゃんけん！」チョキを出した全プレイヤー敗北。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「戦闘！(チョキ)」：全員のじゃんけんを確認し、チョキを出したプレイヤーを敗北に。` },
+  { id:'janken_same',  tag:'misc',  name:'戦闘！(同じ手)', copies:1,
+    desc:'「全員、せーのでじゃんけん！」手番プレイヤーと異なる手を出した全プレイヤー敗北。',
+    hostJudge: true,
+    hostPrompt: (actor) => `「戦闘！(同じ手)」：${actor}と異なる手を出したプレイヤーを敗北にしてください。` },
+  { id:'nose',         tag:'misc',  name:'鼻',             copies:1,
+    desc:'このカードをそっと置き自分の鼻に触れてゆっくり3数える。終わるまでに自分の鼻に触れなかったプレイヤー敗北。',
+    hostJudge: true,
+    hostPrompt: () => `「鼻」：3数える前に鼻に触れなかったプレイヤーを敗北にしてください。` },
+  { id:'nonose',       tag:'misc',  name:'オー、ノーズ',   copies:1,
+    desc:'このカードをそっと置き自分の鼻に触れてゆっくり4数える。終わるまでに鼻に触れたプレイヤー敗北。',
+    hostJudge: true,
+    hostPrompt: () => `「オー、ノーズ」：4数える前に鼻に触れてしまったプレイヤーを敗北にしてください。` },
+  { id:'ninja',        tag:'instant', name:'忍者',          copies:1,
+    desc:'他プレイヤーひとりを選び手札からランダムに1枚抜き取り、即プレイ。',
+    needsTarget: true },
+  { id:'kitten_ambush', tag:'instant', name:'子猫の待ち伏せ', copies:1,
+    desc:'いつでも使える。直前のカード効果を打ち消しカードを捨て、山札から1枚引く。または自分の手番に山札から3枚盗む。' },
+  { id:'amateur',      tag:'instant', name:'素人！',        copies:1,
+    desc:'ふたり以上が同時に敗北したときに使う。そのうちひとりを選ぶ。そいつだけ敗北。',
+    needsTarget: 'loser', hostJudge: false },
+  { id:'twolives',     tag:'instant', name:'二機め',        copies:1,
+    desc:'自分が敗北したときにプレイ。脱落せず山札から2枚引く。または普通に手番で使い2枚引く。' },
+  { id:'teaparty',     tag:'misc',   name:'三月ウサギのお茶会', copies:1,
+    desc:'他プレイヤーひとりを選び席を交換。前に出たカードや手札はその場に残る。',
+    needsTarget: true },
+  { id:'cheater',      tag:'instant', name:'いんちき野郎',  copies:1,
+    desc:'★印カード。カードを2枚引きもう一度手番を行う。動物に待ち伏せされたら敗北。' },
+  { id:'gamershigh',   tag:'misc',   name:'ゲーマーズ・ハイ', copies:1,
+    desc:'任意のプレイヤーの前に置く。そのプレイヤーは以降手札からランダムにカードを使う。2ポイント獲得。',
+    needsTarget: true, placeFront: true },
+];
+
+const CARD_MAP = {};
+CARDS.forEach(c => { CARD_MAP[c.id] = c; });
+
+// ============================================================
+// STATE
+// ============================================================
+const S = {
+  myId: null, myName: '', roomCode: '', isHost: false,
+  hand: [], pendingCard: null, pendingIdx: -1,
+  unsubs: [],
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+const $ = id => document.getElementById(id);
+const rand = (n) => Math.floor(Math.random() * n);
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('screen-' + name).classList.add('active');
+}
+
+function toast(msg, type='i') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = `toast t${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function titleErr(msg) {
+  $('title-err').textContent = msg;
+  setTimeout(() => $('title-err').textContent = '', 3000);
+}
+
+function genId() { return Math.random().toString(36).slice(2,10); }
+function genCode() { return Math.random().toString(36).slice(2,6).toUpperCase(); }
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = rand(i+1); [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildDeck() {
+  const deck = [];
+  CARDS.forEach(c => { for (let i=0;i<c.copies;i++) deck.push(c.id); });
+  return shuffle(deck);
+}
+
+function tagLabel(tag) {
+  return {threat:'脅威',counter:'カウンター',bomb:'爆弾',point:'ポイント',rule:'ルール',instant:'即時',misc:'その他'}[tag]||tag;
+}
+
+// ============================================================
+// FIREBASE
+// ============================================================
+async function createRoom(code) {
+  await set(ref(db, `rooms/${code}`), {
+    host: S.myId,
+    status: 'lobby',
+    turnOrder: [S.myId],
+    currentTurnIndex: 0,
+    deck: buildDeck(),
+    log: ['部屋が作られました。友達を招待しよう！'],
+    judgmentQueue: [],
+    field: {},
+    points: { [S.myId]: 0 },
+    winThreshold: 15,
+    players: {
+      [S.myId]: { name: S.myName, hand: [], eliminated: false, joinedAt: Date.now() }
+    }
+  });
+}
+
+async function roomExists(code) {
+  return (await get(ref(db, `rooms/${code}`))).exists();
+}
+
+async function joinRoom(code) {
+  const updates = {};
+  updates[`rooms/${code}/players/${S.myId}`] = { name: S.myName, hand: [], eliminated: false, joinedAt: Date.now() };
+  const snap = await get(ref(db, `rooms/${code}/turnOrder`));
+  const order = [...(snap.val() || []), S.myId];
+  updates[`rooms/${code}/turnOrder`] = order;
+  updates[`rooms/${code}/points/${S.myId}`] = 0;
+  await update(ref(db), updates);
+}
+
+// ============================================================
+// TITLE ACTIONS
+// ============================================================
+window.doCreate = async function() {
+  if (!db) { titleErr('Firebaseの設定をしてください'); return; }
+  const name = $('inp-name').value.trim();
+  if (!name) { titleErr('名前を入力してください'); return; }
+  S.myName = name; S.isHost = true; S.myId = genId();
+  const code = genCode(); S.roomCode = code;
+  await createRoom(code);
+  enterLobby(code);
+};
+
+window.doJoin = async function() {
+  if (!db) { titleErr('Firebaseの設定をしてください'); return; }
+  const name = $('inp-name').value.trim();
+  const code = $('inp-room').value.trim().toUpperCase();
+  if (!name) { titleErr('名前を入力してください'); return; }
+  if (code.length !== 4) { titleErr('ルームコードは4文字です'); return; }
+  if (!await roomExists(code)) { titleErr('その部屋が見つかりません'); return; }
+  S.myName = name; S.isHost = false; S.myId = genId(); S.roomCode = code;
+  await joinRoom(code);
+  enterLobby(code);
+};
+
+// ============================================================
+// LOBBY
+// ============================================================
+function enterLobby(code) {
+  showScreen('lobby');
+  $('lob-code').textContent = code;
+  const r = ref(db, `rooms/${code}`);
+  const unsub = onValue(r, snap => {
+    if (!snap.exists()) { doBackTitle(); return; }
+    const room = snap.val();
+    const players = room.players || {};
+    const pl = $('lob-players');
+    pl.innerHTML = '';
+    Object.entries(players).sort((a,b)=>a[1].joinedAt-b[1].joinedAt).forEach(([id,p]) => {
+      const div = document.createElement('div');
+      div.className = 'pitem';
+      div.innerHTML = `<div class="dot"></div><span>${p.name}</span>
+        ${id===room.host?'<span class="badge badge-host">HOST</span>':''}
+        ${id===S.myId?'<span class="badge badge-you">YOU</span>':''}`;
+      pl.appendChild(div);
+    });
+    const cnt = Object.keys(players).length;
+    $('lob-wait').style.display = cnt >= 2 ? 'none' : 'block';
+    $('btn-start').style.display = (S.isHost && cnt >= 2) ? 'block' : 'none';
+    if (room.status === 'playing') { unsubAll(); enterGame(code); }
+  });
+  S.unsubs.push(() => off(r));
+}
+
+window.doLeave = async function() {
+  unsubAll();
+  try { await remove(ref(db, `rooms/${S.roomCode}/players/${S.myId}`)); } catch(e){}
+  doBackTitle();
+};
+
+// ============================================================
+// START
+// ============================================================
+window.doStart = async function() {
+  const snap = await get(ref(db, `rooms/${S.roomCode}`));
+  const room = snap.val();
+  let deck = [...room.deck];
+  const updates = {};
+  Object.keys(room.players).forEach(pid => {
+    const hand = [deck.pop(), deck.pop(), deck.pop()].filter(Boolean);
+    updates[`rooms/${S.roomCode}/players/${pid}/hand`] = hand;
+  });
+  updates[`rooms/${S.roomCode}/deck`] = deck;
+  updates[`rooms/${S.roomCode}/status`] = 'playing';
+  updates[`rooms/${S.roomCode}/log`] = ['── ゲーム開始 ──'];
+  await update(ref(db), updates);
+};
+
+// ============================================================
+// GAME LISTEN
+// ============================================================
+function enterGame(code) {
+  showScreen('game');
+  const r = ref(db, `rooms/${code}`);
+  const unsub = onValue(r, snap => {
+    if (!snap.exists()) { doBackTitle(); return; }
+    const room = snap.val();
+    renderGame(room);
+    if (room.status === 'finished') { unsubAll(); showResult(room); }
+  });
+  S.unsubs.push(() => off(r));
+}
+
+function renderGame(room) {
+  const players = room.players || {};
+  const turnOrder = room.turnOrder || [];
+  const curId = turnOrder[room.currentTurnIndex % Math.max(turnOrder.length, 1)];
+  const isMyTurn = curId === S.myId;
+  const field = room.field || {};
+  const points = room.points || {};
+
+  // Topbar
+  const curP = players[curId];
+  $('g-turn-name').textContent = isMyTurn ? 'あなた ⚡' : (curP?.name || '---');
+  $('g-deck-count').textContent = `山札: ${(room.deck||[]).length}枚`;
+  $('g-deck-num').textContent = (room.deck||[]).length;
+
+  // Player status
+  const ps = $('g-pstatus');
+  ps.innerHTML = '';
+  turnOrder.forEach(pid => {
+    const p = players[pid]; if (!p) return;
+    const pt = points[pid] || 0;
+    const div = document.createElement('div');
+    div.className = 'pstatus' + (pid===curId?' active-turn':'') + (p.eliminated?' eliminated':'');
+    div.innerHTML = `<div class="pn">${p.name}${pid===S.myId?' (YOU)':''}</div>
+      <div class="pi">手札:${(p.hand||[]).length} / <span class="points-badge">${pt}pt</span></div>`;
+    ps.appendChild(div);
+  });
+
+  // Field
+  const fg = $('g-field');
+  fg.innerHTML = '';
+  turnOrder.forEach(pid => {
+    const p = players[pid]; if (!p) return;
+    const myField = (field[pid] || []).map(cid => CARD_MAP[cid]?.name || cid);
+    const div = document.createElement('div');
+    div.className = 'field-player';
+    div.innerHTML = `<div class="fpname">${p.name}</div>
+      <div class="field-cards">${myField.length
+        ? myField.map(n=>`<span class="field-card">${n}</span>`).join('')
+        : '<span style="font-size:10px;color:var(--muted)">なし</span>'}</div>`;
+    fg.appendChild(div);
+  });
+
+  // Log
+  const lg = $('g-log');
+  const logs = room.log || [];
+  lg.innerHTML = [...logs].reverse().slice(0,30).map(l => {
+    let cls = '';
+    if (l.includes('勝利')) cls = 'lwin';
+    else if (l.includes('敗北')||l.includes('脱落')) cls = 'llose';
+    else if (l.includes('──')) cls = 'lhigh';
+    return `<div class="le ${cls}">${l}</div>`;
+  }).join('');
+
+  // Deck btn
+  const db2 = $('g-deck-btn');
+  // Check norefill rule
+  const noRefillActive = Object.values(field).some(cards => (cards||[]).includes('norefill'));
+  db2.className = 'deck-btn' + (isMyTurn && !noRefillActive ? '' : ' disabled');
+
+  // Hand
+  const myHand = players[S.myId]?.hand || [];
+  S.hand = myHand;
+  const hc = $('g-hand');
+  hc.innerHTML = '';
+  myHand.forEach((cid, idx) => {
+    const card = CARD_MAP[cid]; if (!card) return;
+    const div = document.createElement('div');
+    div.className = 'card' + (isMyTurn ? '' : ' disabled');
+    div.innerHTML = `<div class="ctag ctag-${card.tag}">${tagLabel(card.tag)}</div>
+      <div class="cname">${card.name}</div>
+      <div class="cdesc">${card.desc}</div>`;
+    div.onclick = () => isMyTurn ? openPlayModal(idx, card) : toast('あなたのターンではありません');
+    hc.appendChild(div);
+  });
+
+  // Host judgment panel
+  const queue = room.judgmentQueue || [];
+  const hp = $('g-host-panel');
+  const hpq = $('g-hp-queue');
+  if (S.isHost && queue.length > 0) {
+    hp.style.display = 'block';
+    hpq.innerHTML = '';
+    queue.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.className = 'hp-item';
+      div.innerHTML = `<div class="hpi-text">${item.prompt}</div>
+        <div class="hpi-btns">
+          <button class="hpi-win" onclick="hostJudge('${S.roomCode}',${idx},'win')">✓ YES</button>
+          <button class="hpi-lose" onclick="hostJudge('${S.roomCode}',${idx},'no')">✗ NO</button>
+        </div>`;
+      hpq.appendChild(div);
+    });
+  } else {
+    hp.style.display = 'none';
+  }
+}
+
+// ============================================================
+// HOST JUDGMENT
+// ============================================================
+window.hostJudge = async function(code, idx, result) {
+  const snap = await get(ref(db, `rooms/${code}`));
+  const room = snap.val();
+  const queue = [...(room.judgmentQueue || [])];
+  const item = queue[idx];
+  if (!item) return;
+
+  queue.splice(idx, 1);
+  let players = { ...room.players };
+  let logs = [...(room.log || [])];
+  let status = room.status;
+  let winner = room.winner || null;
+  const points = { ...room.points };
+
+  if (result === 'win') {
+    // Instant win
+    status = 'finished'; winner = item.actorId;
+    logs.push(`${players[item.actorId]?.name} の勝利！（判定: ${item.cardName}）`);
+  } else if (item.type === 'conditional_point') {
+    // Falls through to point
+    const pt = (points[item.actorId] || 0) + 5;
+    points[item.actorId] = pt;
+    logs.push(`${players[item.actorId]?.name} が5ポイント獲得（合計 ${pt}pt）`);
+    if (pt >= (room.winThreshold || 15)) {
+      status = 'finished'; winner = item.actorId;
+      logs.push(`${players[item.actorId]?.name} が ${pt}ポイントで勝利！`);
+    }
+  } else if (item.type === 'rule_violation') {
+    // Eliminate target
+    if (item.targetId && players[item.targetId]) {
+      players[item.targetId] = { ...players[item.targetId], eliminated: true };
+      logs.push(`${players[item.targetId]?.name} がルール違反で脱落！`);
+    }
+  } else if (item.type === 'game_judge') {
+    // Generic: host resolves manually in chat/voice
+    logs.push(`「${item.cardName}」の判定完了 (${result === 'win' ? 'YES' : 'NO'})`);
+  }
+
+  const { remaining, newWinner } = checkWinConditions(players, room.turnOrder, status, winner);
+  if (newWinner) { status = 'finished'; winner = newWinner; }
+
+  const updates = {};
+  updates[`rooms/${code}/judgmentQueue`] = queue;
+  updates[`rooms/${code}/players`] = players;
+  updates[`rooms/${code}/log`] = logs;
+  updates[`rooms/${code}/status`] = status;
+  updates[`rooms/${code}/points`] = points;
+  if (winner) updates[`rooms/${code}/winner`] = winner;
+  await update(ref(db), updates);
+};
+
+// ============================================================
+// DRAW
+// ============================================================
+window.doDraw = async function() {
+  const code = S.roomCode;
+  const snap = await get(ref(db, `rooms/${code}`));
+  const room = snap.val();
+  const turnOrder = room.turnOrder || [];
+  const curId = turnOrder[room.currentTurnIndex % turnOrder.length];
+  if (curId !== S.myId) { toast('あなたのターンではありません'); return; }
+
+  // Check norefill
+  const field = room.field || {};
+  const noRefillActive = Object.values(field).some(cards => (cards||[]).includes('norefill'));
+  if (noRefillActive) { toast('手札補充なし！ カードを引けません'); return; }
+
+  const deck = [...(room.deck || [])];
+  if (deck.length === 0) { toast('山札がありません'); return; }
+  const drawn = deck.pop();
+  const myHand = [...(room.players[S.myId].hand || []), drawn];
+  const logs = [...(room.log||[]), `${S.myName} がカードを引いた`];
+  const nextIdx = advanceTurn(room);
+  await update(ref(db), {
+    [`rooms/${code}/deck`]: deck,
+    [`rooms/${code}/players/${S.myId}/hand`]: myHand,
+    [`rooms/${code}/log`]: logs,
+    [`rooms/${code}/currentTurnIndex`]: nextIdx,
+  });
+};
+
+// ============================================================
+// PLAY MODAL
+// ============================================================
+function openPlayModal(idx, card) {
+  S.pendingCard = card; S.pendingIdx = idx;
+  const prev = $('mplay-preview');
+  prev.innerHTML = `<div class="ctag ctag-${card.tag}">${tagLabel(card.tag)}</div>
+    <div class="cname">${card.name}</div>
+    <div class="cdesc" style="margin-top:8px">${card.desc}</div>`;
+
+  // Check if target needed
+  const ta = $('mplay-target-area');
+  ta.innerHTML = '';
+  $('mplay-btns').style.display = 'flex';
+
+  if (card.needsTarget === true) {
+    // Show target buttons
+    ta.innerHTML = '<div style="font-size:11px;color:var(--muted);font-family:Share Tech Mono,monospace;margin-bottom:8px;letter-spacing:0.15em">対象を選んでください</div>';
+    const tl = document.createElement('div'); tl.className = 'target-list';
+    // Get players from last known state
+    getPlayers().then(players => {
+      players.forEach(([pid, p]) => {
+        if (p.eliminated) return;
+        const btn = document.createElement('button');
+        btn.className = 'target-btn';
+        btn.textContent = p.name + (pid === S.myId ? ' (自分)' : '');
+        btn.onclick = () => { S.pendingTarget = pid; highlightTarget(btn); };
+        tl.appendChild(btn);
+      });
+      ta.appendChild(tl);
+      $('mplay-btns').style.display = 'flex';
+    });
+  } else {
+    S.pendingTarget = null;
+  }
+
+  $('modal-play').classList.add('on');
+}
+
+function highlightTarget(btn) {
+  document.querySelectorAll('.target-btn').forEach(b => b.style.borderColor = '');
+  btn.style.borderColor = 'var(--blue)';
+}
+
+async function getPlayers() {
+  const snap = await get(ref(db, `rooms/${S.roomCode}/players`));
+  return Object.entries(snap.val() || {});
+}
+
+window.confirmPlay = async function() {
+  const card = S.pendingCard;
+  const idx = S.pendingIdx;
+  if (!card) { closeModal('modal-play'); return; }
+  if (card.needsTarget === true && !S.pendingTarget) {
+    toast('対象を選んでください', 'i'); return;
+  }
+  closeModal('modal-play');
+  await applyCard(card, idx, S.pendingTarget);
+  S.pendingCard = null; S.pendingIdx = -1; S.pendingTarget = null;
+};
+
+window.closeModal = function(id) { $(id).classList.remove('on'); };
+
+// ============================================================
+// APPLY CARD
+// ============================================================
+async function applyCard(card, handIdx, targetId) {
+  const code = S.roomCode;
+  const snap = await get(ref(db, `rooms/${code}`));
+  const room = snap.val();
+  let players = JSON.parse(JSON.stringify(room.players || {}));
+  let turnOrder = [...(room.turnOrder || [])];
+  let deck = [...(room.deck || [])];
+  let logs = [...(room.log || [])];
+  let field = JSON.parse(JSON.stringify(room.field || {}));
+  let points = { ...room.points };
+  let jQueue = [...(room.judgmentQueue || [])];
+  let status = room.status;
+  let winner = room.winner || null;
+  let currentTurnIndex = room.currentTurnIndex;
+  const threshold = room.winThreshold || 15;
+
+  // Remove card from hand
+  const myHand = [...(players[S.myId].hand || [])];
+  myHand.splice(handIdx, 1);
+  players[S.myId].hand = myHand;
+
+  logs.push(`${S.myName} が「${card.name}」をプレイ！`);
+
+  // Place front helper
+  const placeOnField = (pid, cid) => {
+    if (!field[pid]) field[pid] = [];
+    field[pid].push(cid);
+  };
+
+  // Check dino protection
+  const targetHasDino = (pid) => (field[pid] || []).includes('dino') && pid !== S.myId;
+
+  // ── CARD EFFECTS ──
+  switch(card.id) {
+
+    // THREAT CARDS
+    case 'dragon': case 'porcupine': case 'blackhole': case 'laser': {
+      if (targetHasDino(targetId)) {
+        logs.push(`${players[targetId].name} は恐竜で守られており置けない！`);
+      } else {
+        placeOnField(targetId, card.id);
+        logs.push(`「${card.name}」が ${players[targetId]?.name} の前に置かれた！`);
+      }
+      // End turn — threat checks happen at start of next turn for target
+      break;
+    }
+
+    case 'hotpotato': {
+      if (targetHasDino(targetId)) {
+        logs.push(`${players[targetId].name} は恐竜で守られている！`);
+      } else {
+        placeOnField(targetId, card.id);
+        logs.push(`「ホットポテト」が ${players[targetId]?.name} の前に！`);
+        jQueue.push({ type:'rule_violation', cardName:'ホットポテト', actorId:targetId, targetId,
+          prompt: `「ホットポテト」：${players[targetId]?.name} は左隣へパスしましたか？ YES→パス成功(効果移動) / NO→敗北` });
+      }
+      break;
+    }
+
+    // COUNTER CARDS
+    case 'science': {
+      const myField = field[S.myId] || [];
+      const match = myField.find(cid => ['dragon','blackhole'].includes(cid));
+      if (match) {
+        field[S.myId] = myField.filter(c=>c!==match);
+        if (targetId && !targetHasDino(targetId)) { placeOnField(targetId, match); logs.push(`「科学」で「${CARD_MAP[match].name}」を ${players[targetId]?.name} へ移した！`); }
+        else { logs.push(`「科学」で「${CARD_MAP[match].name}」を除去！`); }
+      } else {
+        deck = drawCards(deck, players, S.myId, 2);
+        logs.push(`「科学」: 対象カードなし→カードを2枚引いた`);
+      }
+      break;
+    }
+    case 'spaceship': {
+      const myField = field[S.myId] || [];
+      const match = myField.find(cid => ['laser','blackhole'].includes(cid));
+      if (match) {
+        field[S.myId] = myField.filter(c=>c!==match);
+        if (targetId && !targetHasDino(targetId)) { placeOnField(targetId, match); logs.push(`「宇宙船」で移動！`); }
+        else { logs.push(`「宇宙船」で除去！`); }
+      } else { deck = drawCards(deck, players, S.myId, 2); logs.push(`「宇宙船」: 対象なし→2枚引いた`); }
+      break;
+    }
+    case 'shield': {
+      const myField = field[S.myId] || [];
+      const match = myField.find(cid => ['dragon','porcupine'].includes(cid));
+      if (match) {
+        field[S.myId] = myField.filter(c=>c!==match);
+        if (targetId && !targetHasDino(targetId)) { placeOnField(targetId, match); logs.push(`「盾」で移動！`); }
+        else { logs.push(`「盾」で除去！`); }
+      } else { deck = drawCards(deck, players, S.myId, 2); logs.push(`「盾」: 対象なし→2枚引いた`); }
+      break;
+    }
+    case 'fastmove': {
+      const myField = field[S.myId] || [];
+      const match = myField.find(cid => ['laser','porcupine'].includes(cid));
+      if (match) {
+        field[S.myId] = myField.filter(c=>c!==match);
+        if (targetId && !targetHasDino(targetId)) { placeOnField(targetId, match); logs.push(`「猛スピード！」で移動！`); }
+        else { logs.push(`「猛スピード！」で除去！`); }
+      } else { deck = drawCards(deck, players, S.myId, 2); logs.push(`「猛スピード！」: 対象なし→2枚引いた`); }
+      break;
+    }
+
+    // BOMB
+    case 'bomb': {
+      placeOnField(S.myId, 'bomb');
+      const totalBombs = Object.values(field).flat().filter(c=>c==='bomb').length;
+      logs.push(`爆弾を置いた！ 場の爆弾: ${totalBombs}枚`);
+      if (totalBombs >= 4) {
+        logs.push('💥 爆発！ 全員敗北！');
+        Object.keys(players).forEach(pid => players[pid].eliminated = true);
+        status = 'finished';
+      }
+      break;
+    }
+
+    // POINTS
+    case 'point8': {
+      placeOnField(S.myId, 'point8');
+      points[S.myId] = (points[S.myId]||0) + 8;
+      logs.push(`8ポイント獲得！（合計 ${points[S.myId]}pt）`);
+      if (points[S.myId] >= threshold) { status='finished'; winner=S.myId; logs.push(`${S.myName} が ${points[S.myId]}ptで勝利！`); }
+      break;
+    }
+    case 'superpoint': {
+      placeOnField(S.myId, 'superpoint');
+      points[S.myId] = (points[S.myId]||0) + 90;
+      // Change win threshold to 100
+      logs.push(`スーパーポイント90pt獲得！勝利条件が100ptに変更！（現在 ${points[S.myId]}pt）`);
+      if (points[S.myId] >= 100) { status='finished'; winner=S.myId; logs.push(`${S.myName} の勝利！`); }
+      break;
+    }
+    case 'win5a': case 'win5b': case 'win5c': case 'win5e': {
+      placeOnField(S.myId, card.id);
+      const prompt = card.hostPrompt(S.myName);
+      jQueue.push({ type:'conditional_point', cardName:card.name, actorId:S.myId, prompt });
+      logs.push(`「${card.name}」プレイ — 親が条件を確認中…`);
+      break;
+    }
+    case 'win5d': {
+      placeOnField(S.myId, 'win5d');
+      const bombCount = Object.values(field).flat().filter(c=>c==='bomb').length;
+      if (bombCount >= 3) { status='finished'; winner=S.myId; logs.push(`爆弾3枚！ ${S.myName} の勝利！`); }
+      else { points[S.myId] = (points[S.myId]||0) + 5; logs.push(`爆弾${bombCount}枚（3未満）→5ポイント獲得`); }
+      break;
+    }
+    case 'alldiewin': {
+      // All players put their bombs out
+      let bombsPlaced = 0;
+      Object.keys(players).forEach(pid => {
+        const h = players[pid].hand || [];
+        const bidx = h.indexOf('bomb');
+        if (bidx !== -1) {
+          players[pid].hand = h.filter((_,i)=>i!==bidx);
+          placeOnField(pid, 'bomb');
+          bombsPlaced++;
+          logs.push(`${players[pid].name} の爆弾が置かれた！`);
+        }
+      });
+      const totalBombs = Object.values(field).flat().filter(c=>c==='bomb').length;
+      if (totalBombs >= 4) {
+        status='finished'; winner=S.myId;
+        logs.push(`💥 爆発！ ${S.myName} の勝利！（爆弾パーティ）`);
+      } else {
+        logs.push(`爆弾が${totalBombs}枚 — 爆発せず…`);
+      }
+      break;
+    }
+    case 'moral': {
+      // All win
+      status = 'finished'; winner = '__all__';
+      logs.push('道徳的には正しい！ 全員勝利！');
+      break;
+    }
+
+    // RULE CARDS
+    case 'rule_sore': case 'rule_watashi': case 'rule_anata': case 'rule_yubisasi':
+    case 'rule_pop': case 'rule_zombie': {
+      placeOnField(S.myId, card.id);
+      logs.push(`ルール「${card.name}」発動！`);
+      jQueue.push({ type:'rule_violation', cardName:card.name, actorId:S.myId,
+        prompt: card.hostPrompt(S.myName) });
+      break;
+    }
+    case 'penguin': {
+      placeOnField(S.myId, 'penguin');
+      logs.push(`${S.myName} がペンギンを置いた。卑怯……`);
+      break;
+    }
+    case 'evillaugh': {
+      placeOnField(S.myId, 'evillaugh');
+      logs.push(`${S.myName} が邪悪な笑いを置いた。フハハ…`);
+      break;
+    }
+    case 'dino': {
+      placeOnField(S.myId, 'dino');
+      logs.push(`${S.myName} が恐竜を置いた！もう誰もカードを置けない。`);
+      break;
+    }
+    case 'theend': {
+      placeOnField(S.myId, 'theend');
+      logs.push(`「ジ・エンド」が置かれた…次の ${S.myName} の手番終了時に全員敗北！`);
+      break;
+    }
+    case 'norefill': {
+      placeOnField(S.myId, 'norefill');
+      logs.push('「手札補充なし」！ 以降誰も山札を引けない！');
+      break;
+    }
+
+    // MISC / HOST-JUDGED
+    case 'defeat': {
+      players[S.myId].eliminated = true;
+      logs.push(`${S.myName} は「敗北！」を使って敗北した。まじで。`);
+      break;
+    }
+    case 'presentsnake': case 'presentkitten': case 'presentempty':
+    case 'cakeordeath': case 'fingercount_even': case 'fingercount_odd':
+    case 'fingercount_prime': case 'janken_guu': case 'janken_paa':
+    case 'janken_choki': case 'janken_same': case 'nose': case 'nonose': {
+      const prompt = card.hostPrompt(S.myName);
+      jQueue.push({ type:'game_judge', cardName:card.name, actorId:S.myId, prompt });
+      logs.push(`「${card.name}」プレイ — 親が判定中！`);
+      break;
+    }
+    case 'iwaru': {
+      logs.push(`「いじわる」！ 誰かが勝利したときに使えるカード`);
+      break;
+    }
+    case 'ninja': {
+      if (targetId && players[targetId]) {
+        const th = players[targetId].hand || [];
+        if (th.length > 0) {
+          const stolen = th[rand(th.length)];
+          players[targetId].hand = th.filter(c=>c!==stolen);
+          logs.push(`忍者が ${players[targetId].name} から「${CARD_MAP[stolen]?.name||stolen}」を盗んだ！`);
+          // Auto-play stolen card
+          players[S.myId].hand = myHand; // already removed current card
+          // We'll add stolen to hand and let player play it next turn
+          players[S.myId].hand = [...(players[S.myId].hand), stolen];
+          logs.push(`「${CARD_MAP[stolen]?.name||stolen}」が手札に追加された（即プレイ推奨）`);
+        } else {
+          logs.push(`${players[targetId].name} の手札が空だった！`);
+        }
+      }
+      break;
+    }
+    case 'kitten_ambush': {
+      logs.push('子猫の待ち伏せ！ 直前のカード効果を打ち消し（手動対応）またはカードを3枚引く');
+      deck = drawCards(deck, players, S.myId, 1);
+      break;
+    }
+    case 'twolives': {
+      deck = drawCards(deck, players, S.myId, 2);
+      logs.push(`${S.myName} が「二機め」でカードを2枚引いた`);
+      break;
+    }
+    case 'teaparty': {
+      if (targetId && players[targetId]) {
+        // Swap turn positions
+        const myIdx = turnOrder.indexOf(S.myId);
+        const thIdx = turnOrder.indexOf(targetId);
+        if (myIdx !== -1 && thIdx !== -1) {
+          [turnOrder[myIdx], turnOrder[thIdx]] = [turnOrder[thIdx], turnOrder[myIdx]];
+          // Swap field
+          const tmp = field[S.myId] ? [...field[S.myId]] : [];
+          field[S.myId] = field[targetId] ? [...field[targetId]] : [];
+          field[targetId] = tmp;
+          logs.push(`${S.myName} と ${players[targetId].name} が席を交換！`);
+        }
+      }
+      break;
+    }
+    case 'cheater': {
+      deck = drawCards(deck, players, S.myId, 2);
+      logs.push(`「いんちき野郎」！ 2枚引いてもう一度手番`);
+      // Don't advance turn
+      const updates2 = {};
+      updates2[`rooms/${code}/players`] = players;
+      updates2[`rooms/${code}/deck`] = deck;
+      updates2[`rooms/${code}/log`] = logs;
+      updates2[`rooms/${code}/field`] = field;
+      updates2[`rooms/${code}/points`] = points;
+      updates2[`rooms/${code}/judgmentQueue`] = jQueue;
+      await update(ref(db), updates2);
+      return;
+    }
+    case 'gamershigh': {
+      if (targetId) {
+        placeOnField(targetId, 'gamershigh');
+        points[targetId] = (points[targetId]||0) + 2;
+        logs.push(`「ゲーマーズ・ハイ」が ${players[targetId]?.name} の前に！以降ランダムプレイ＆2pt獲得`);
+      }
+      break;
+    }
+    case 'amateur': {
+      logs.push('「素人！」：ふたり以上が同時に敗北したときに使う（手動判定）');
+      break;
+    }
+    default:
+      logs.push('効果を適用');
+  }
+
+  // ── Threat check at end of turn ──
+  // If threats on myField still there, player fails
+  const threats = ['dragon','porcupine','blackhole','laser'];
+  if (threats.some(t => (field[S.myId]||[]).includes(t))) {
+    players[S.myId].eliminated = true;
+    const threatNames = (field[S.myId]||[]).filter(c=>threats.includes(c)).map(c=>CARD_MAP[c].name).join('、');
+    logs.push(`${S.myName} は「${threatNames}」に食われて敗北！`);
+    field[S.myId] = (field[S.myId]||[]).filter(c=>!threats.includes(c));
+  }
+
+  // ── Win check ──
+  const { newWinner } = checkWinConditions(players, turnOrder, status, winner);
+  if (newWinner && status !== 'finished') { status='finished'; winner=newWinner; }
+
+  const nextIdx = status === 'finished' ? currentTurnIndex : advanceTurn({...room, currentTurnIndex, turnOrder, players});
+
+  const updates = {};
+  updates[`rooms/${code}/players`] = players;
+  updates[`rooms/${code}/deck`] = deck;
+  updates[`rooms/${code}/log`] = logs;
+  updates[`rooms/${code}/status`] = status;
+  updates[`rooms/${code}/turnOrder`] = turnOrder;
+  updates[`rooms/${code}/field`] = field;
+  updates[`rooms/${code}/points`] = points;
+  updates[`rooms/${code}/judgmentQueue`] = jQueue;
+  updates[`rooms/${code}/currentTurnIndex`] = nextIdx;
+  if (winner) updates[`rooms/${code}/winner`] = winner;
+  if (card.id === 'superpoint') updates[`rooms/${code}/winThreshold`] = 100;
+
+  await update(ref(db), updates);
+}
+
+function drawCards(deck, players, pid, n) {
+  const d = [...deck];
+  const h = [...(players[pid].hand || [])];
+  for (let i=0;i<n;i++) { if (d.length) h.push(d.pop()); }
+  players[pid].hand = h;
+  return d;
+}
+
+function checkWinConditions(players, turnOrder, status, winner) {
+  if (status === 'finished') return { newWinner: winner };
+  const remaining = turnOrder.filter(pid => !players[pid]?.eliminated);
+  if (remaining.length === 1) return { newWinner: remaining[0] };
+  if (remaining.length === 0) return { newWinner: '__nobody__' };
+  return { newWinner: null };
+}
+
+function advanceTurn(room) {
+  const to = room.turnOrder || [];
+  const players = room.players || {};
+  let idx = ((room.currentTurnIndex || 0) + 1) % Math.max(to.length, 1);
+  let guard = 0;
+  while (players[to[idx]]?.eliminated && guard < to.length) {
+    idx = (idx+1) % to.length; guard++;
+  }
+  return idx;
+}
+
+// ============================================================
+// RESULT
+// ============================================================
+function showResult(room) {
+  showScreen('result');
+  const isWinner = room.winner === S.myId;
+  const allWin = room.winner === '__all__';
+  const nobody = room.winner === '__nobody__' || !room.winner;
+
+  if (allWin) {
+    $('r-emoji').textContent = '🌈';
+    $('r-title').textContent = '全員勝利！';
+    $('r-title').className = 'result-title win';
+    $('r-sub').textContent = '道徳的には正しい！';
+  } else if (nobody) {
+    $('r-emoji').textContent = '💀';
+    $('r-title').textContent = '全滅…';
+    $('r-title').className = 'result-title draw';
+    $('r-sub').textContent = '引き分けです';
+  } else if (isWinner) {
+    $('r-emoji').textContent = '🏆';
+    $('r-title').textContent = '勝利！';
+    $('r-title').className = 'result-title win';
+    $('r-sub').textContent = 'あなたが勝ちました！';
+  } else {
+    const wname = room.players[room.winner]?.name || '誰か';
+    $('r-emoji').textContent = '😵';
+    $('r-title').textContent = '敗北…';
+    $('r-title').className = 'result-title lose';
+    $('r-sub').textContent = `${wname} の勝ちです`;
+  }
+}
+
+// ============================================================
+// MISC
+// ============================================================
+function unsubAll() { S.unsubs.forEach(f=>f()); S.unsubs=[]; }
+
+window.doBackTitle = function() {
+  unsubAll();
+  S.roomCode=''; S.myId=null; S.hand=[];
+  showScreen('title');
+};
+
+</script>
+</body>
+</html>
